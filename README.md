@@ -12,17 +12,17 @@ Ogni blueprint si installa **con un click** e si configura **senza scrivere una 
 
 ## 🔜 In arrivo
 
-- **Peak shaving** — evita il distacco del contatore da 3 kW scaricando la batteria nei picchi di consumo
-- **Carica notturna in F3** — riempi l'accumulo quando l'energia costa meno
-- **Gestione carichi a cascata** — accendi i carichi in ordine di priorità quando c'è surplus
+Nuovi blueprint sono in lavorazione! Iscriviti al [canale YouTube](https://www.youtube.com/@DinamoTech) e attiva la campanella per non perderti le novità: ogni blueprint arriva insieme al video che lo spiega.
 
-Iscriviti al canale e attiva la campanella: ogni blueprint arriva insieme al video che lo spiega.
+Hai un'idea o un suggerimento per un nuovo blueprint? Scrivici su [WhatsApp](https://wa.me/393519597473) 💬
 
 ## 🚀 Come si installa un blueprint
 
+> 💡 Nell'interfaccia italiana di Home Assistant i blueprint si chiamano **Progetti**.
+
 1. Clicca il badge **Importa Blueprint** nella tabella qui sopra
 2. Conferma l'indirizzo della tua istanza Home Assistant (solo la prima volta)
-3. Clicca **Importa blueprint** nell'anteprima
+3. Clicca **Importa progetto** nell'anteprima
 4. Clicca **Crea automazione** e compila il modulo
 
 Le istruzioni dettagliate di ogni blueprint sono nel README della sua cartella.

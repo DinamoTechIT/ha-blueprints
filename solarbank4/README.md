@@ -19,12 +19,14 @@ E riporta tutto allo stato normale quando il surplus finisce, al tramonto, o se 
 
 ## 🚀 Installazione (2 minuti)
 
+> 💡 Nell'interfaccia italiana di Home Assistant i blueprint si chiamano **Progetti**.
+
 1. Clicca il badge **Importa Blueprint** qui sopra
 2. Conferma l'indirizzo della tua istanza Home Assistant (solo la prima volta)
-3. Clicca **Importa blueprint**
+3. Clicca **Importa progetto**
 4. Clicca **Crea automazione** e rispondi alle domande del modulo
 
-> In alternativa: *Impostazioni → Automazioni e scene → Blueprint → Importa blueprint* e incolla questo URL:
+> In alternativa: *Impostazioni → Automazioni e scene → Progetti → Importa progetto* e incolla questo URL:
 > ```
 > https://raw.githubusercontent.com/dinamotechit/ha-blueprints/main/solarbank4/surplus_solare.yaml
 > ```
@@ -66,7 +68,7 @@ La potenza massima erogabile viene letta **in tempo reale** dal sensore *Max Dis
 
 ## 🔄 Aggiornamenti
 
-Quando pubblichiamo una nuova versione: *Impostazioni → Automazioni e scene → Blueprint → menu ⋮ sul blueprint → **Reimporta***. Le automazioni già create si aggiornano da sole.
+Quando pubblichiamo una nuova versione: *Impostazioni → Automazioni e scene → Progetti → menu ⋮ sul progetto → **Reimporta***. Le automazioni già create si aggiornano da sole.
 
 ## ❤️ Supporta il progetto
 
