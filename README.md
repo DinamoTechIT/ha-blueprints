@@ -37,7 +37,7 @@ Le istruzioni dettagliate di ogni blueprint sono nel README della sua cartella.
 I blueprint sono e resteranno **gratuiti**. Se ti fanno risparmiare e vuoi ricambiare:
 
 - ☕ [Offrici un caffè via PayPal](https://www.paypal.com/ncp/payment/CD3C2UMCK8J7L)
-- 🛒 Dai un'occhiata allo [store DinamoTech](https://dinamotech.it) — codice sconto **DINAMOTECH10**
+- 🛒 Dai un'occhiata allo [store DinamoTech](https://dinamotech.it)
 - 👍 Metti una ⭐ a questa repo e iscriviti al [canale YouTube](https://www.youtube.com/@DinamoTech)
 
 ## 📄 Licenza
