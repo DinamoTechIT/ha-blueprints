@@ -19,12 +19,14 @@ E riporta tutto allo stato normale quando il surplus finisce, al tramonto, o se 
 
 ## 🚀 Installazione (2 minuti)
 
+> 💡 Nell'interfaccia italiana di Home Assistant i blueprint si chiamano **Progetti**.
+
 1. Clicca il badge **Importa Blueprint** qui sopra
 2. Conferma l'indirizzo della tua istanza Home Assistant (solo la prima volta)
-3. Clicca **Importa blueprint**
+3. Clicca **Importa progetto**
 4. Clicca **Crea automazione** e rispondi alle domande del modulo
 
-> In alternativa: *Impostazioni → Automazioni e scene → Blueprint → Importa blueprint* e incolla questo URL:
+> In alternativa: *Impostazioni → Automazioni e scene → Progetti → Importa progetto* e incolla questo URL:
 > ```
 > https://raw.githubusercontent.com/dinamotechit/ha-blueprints/main/solarbank4/surplus_solare.yaml
 > ```
@@ -47,6 +49,9 @@ Poi compila **solo la sezione** corrispondente alla tua scelta. I menu dei senso
 | SOC minimo di mantenimento | 50 % | Sotto questa carica il carico viene spento |
 | Stabilità attivazione/disattivazione | 5 min | Filtra nuvole e picchi di consumo |
 | Prelievo massimo tollerato (facoltativo) | 300 W | Rete di sicurezza: spegne il carico se prelevi dalla rete |
+| Sensore potenza smart plug (facoltativo) | — | Solo modalità power station: se la presa smart misura la potenza, la ricarica completata viene rilevata e la presa spenta |
+| Potenza minima di ricarica | 25 W | Sotto questa potenza la power station è considerata carica |
+| Durata sotto soglia | 10 min | Tempo di conferma prima dello spegnimento (copre anche la rampa iniziale di ricarica) |
 
 ### Il modello fisico (perché non devi impostare soglie a caso)
 
@@ -57,13 +62,13 @@ La potenza massima erogabile viene letta **in tempo reale** dal sensore *Max Dis
 
 ## ⚠️ Limitazioni note
 
-- **Power station piena**: il blueprint non rileva quando la power station ha finito di caricarsi; la presa resta alimentata (a vuoto, nessun danno) fino a fine surplus. Una versione futura userà la misura di potenza della smart plug.
+- **Power station piena**: se la presa smart non misura la potenza (o il sensore non è configurato), il blueprint non rileva la fine della ricarica e la presa resta alimentata (a vuoto, nessun danno) fino a fine surplus. Con una smart plug con misura di potenza, configura il sensore nella sezione Power Station e la presa si spegne da sola a ricarica completata.
 - **Modulo non dinamico**: i blueprint di Home Assistant mostrano sempre tutte le sezioni; compila solo quella della modalità scelta, le altre vengono ignorate.
 - Il blueprint controlla **un carico**: per più carichi in cascata, crea più automazioni dallo stesso blueprint (con soglie diverse) — o aspetta il blueprint dedicato 😉
 
 ## 🔄 Aggiornamenti
 
-Quando pubblichiamo una nuova versione: *Impostazioni → Automazioni e scene → Blueprint → menu ⋮ sul blueprint → **Reimporta***. Le automazioni già create si aggiornano da sole.
+Quando pubblichiamo una nuova versione: *Impostazioni → Automazioni e scene → Progetti → menu ⋮ sul progetto → **Reimporta***. Le automazioni già create si aggiornano da sole.
 
 ## ❤️ Supporta il progetto
 
@@ -71,4 +76,5 @@ Il blueprint è gratuito. Se ti fa risparmiare: [offrici un caffè via PayPal](h
 
 ## 📋 Changelog
 
+- **v1.1** — Rilevamento power station carica (opzionale): nuovo sensore di potenza della smart plug nella sezione Power Station; se la potenza resta sotto la soglia (default 25 W) per il tempo impostato (default 10 min) mentre la presa è accesa, la presa viene spenta. Le automazioni esistenti continuano a funzionare senza modifiche: basta Reimportare il blueprint.
 - **v1.0** — Prima release: modalità ACS setpoint / ACS resistenza / power station, modello fisico P_max−P_carico, watchdog sensori, blocco con avviso, PV terze parti opzionale, sicurezza sul prelievo rete.

@@ -26,7 +26,8 @@ blueprint:
     Include: watchdog sensori non disponibili (con spegnimento di sicurezza
     e notifica), blocco con avviso se la potenza erogabile è inferiore al
     carico, PV di terze parti opzionale, soglia di sicurezza opzionale sul
-    prelievo dalla rete.
+    prelievo dalla rete, rilevamento opzionale di power station carica
+    tramite la misura di potenza della smart plug.
 
     Creato da DinamoTech — dinamotech.it
   domain: automation
@@ -196,6 +197,41 @@ blueprint:
           selector:
             entity:
               domain: switch
+        sensore_potenza_ps:
+          name: Sensore potenza della smart plug (facoltativo)
+          description: >-
+            Il sensore di potenza della presa smart. Se configurato, quando
+            la power station finisce di caricarsi (potenza sotto la soglia
+            qui sotto per il tempo indicato) la presa viene spenta invece
+            di restare alimentata a vuoto.
+          default: ""
+          selector:
+            entity:
+              domain: sensor
+              device_class: power
+        soglia_potenza_ps:
+          name: Potenza minima di ricarica
+          description: >-
+            Sotto questa potenza la power station è considerata carica
+            (il caricatore in standby assorbe solo pochi watt).
+          default: 25
+          selector:
+            number:
+              min: 5
+              max: 200
+              step: 5
+              unit_of_measurement: W
+        minuti_ps_piena:
+          name: Durata sotto soglia (minuti)
+          description: >-
+            Per quanti minuti la potenza deve restare sotto la soglia prima
+            di spegnere la presa. Copre anche la rampa iniziale di ricarica.
+          default: 10
+          selector:
+            number:
+              min: 1
+              max: 60
+              unit_of_measurement: min
 
     # ================= SOGLIE E COMPORTAMENTO =================
     sezione_soglie:
@@ -283,6 +319,10 @@ trigger_variables:
   tv_soc_off: !input soglia_soc_off
   tv_prelievo_ent: !input sensore_prelievo
   tv_soglia_prelievo: !input soglia_prelievo
+  tv_scelta: !input scelta_surplus
+  tv_rele_ps: !input entita_rele_ps
+  tv_potenza_ps_ent: !input sensore_potenza_ps
+  tv_soglia_potenza_ps: !input soglia_potenza_ps
 
 triggers:
   # ===== ATTIVAZIONE =====
@@ -325,6 +365,21 @@ triggers:
     for:
       minutes: 5
     id: "prelievo"
+
+  # ===== POWER STATION PIENA (solo se il sensore di potenza è configurato) =====
+  # La presa è accesa ma il caricatore assorbe meno della soglia: la power
+  # station ha finito di caricarsi. Sensore rotto → default alto (99999) →
+  # il template resta falso e la presa non viene mai spenta per errore.
+  - trigger: template
+    value_template: >-
+      {{ tv_scelta == 'power_station'
+         and tv_potenza_ps_ent != ""
+         and tv_rele_ps != ""
+         and is_state(tv_rele_ps, 'on')
+         and states(tv_potenza_ps_ent) | float(99999) < tv_soglia_potenza_ps | float }}
+    for:
+      minutes: !input minuti_ps_piena
+    id: "ps_piena"
 
   # ===== TRAMONTO =====
   - trigger: sun
@@ -371,7 +426,7 @@ variables:
   # Comando risultante da questo trigger: 'on', 'off' o nessuno
   _comando: >-
     {% if trigger.id == 'on' %} on
-    {% elif trigger.id in ['off', 'prelievo', 'guasto'] %} off
+    {% elif trigger.id in ['off', 'prelievo', 'guasto', 'ps_piena'] %} off
     {% elif trigger.id == 'tramonto' and _solo_di_giorno %} off
     {% else %} none
     {% endif %}
