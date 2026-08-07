@@ -1,0 +1,500 @@
+blueprint:
+  name: Anker SOLIX Solarbank 4 — Surplus Solare (DinamoTech)
+  description: >-
+    Sfrutta il surplus solare della tua Solarbank 4: quando la batteria è
+    carica e c'è margine di potenza, usa l'energia in eccesso per produrre
+    acqua calda sanitaria o per ricaricare una power station portatile,
+    e disattiva tutto quando il sole non copre più il carico.
+
+    Richiede l'integrazione ufficiale "Anker SOLIX Official" (controllo
+    locale Modbus TCP). I menu a tendina mostrano solo i sensori Anker.
+
+    Due domande per configurarlo:
+    1) Cosa vuoi fare con l'energia in eccesso? Ricaricare una power
+       station (via relè/smart plug) oppure scaldare l'acqua calda.
+    2) Se scegli l'acqua calda: il tuo sistema consente di regolare la
+       temperatura da Home Assistant (pompa di calore o boiler smart,
+       es. Daikin Altherma via Onecta) oppure si tratta della semplice
+       accensione di una resistenza / boiler elettrico via relè?
+       (es. Shelly — per il collegamento vedi la Guida Smart Grid
+       di DinamoTech)
+
+    Modello fisico a due parametri:
+    • ATTIVAZIONE: SOC > soglia alta E carico casa < (P_max − P_carico)
+    • MANTENIMENTO: SOC > soglia bassa E produzione solare > P_carico / 1,2
+
+    Include: watchdog sensori non disponibili (con spegnimento di sicurezza
+    e notifica), blocco con avviso se la potenza erogabile è inferiore al
+    carico, PV di terze parti opzionale, soglia di sicurezza opzionale sul
+    prelievo dalla rete.
+
+    Creato da DinamoTech — dinamotech.it
+  domain: automation
+  input:
+    # ================= SORGENTE: SOLARBANK 4 =================
+    sezione_sorgente:
+      name: Sorgente — Anker Solarbank 4
+      icon: mdi:solar-power
+      description: I sensori della tua Solarbank 4 (integrazione Anker SOLIX Official)
+      input:
+        sensore_soc:
+          name: Sensore SOC batteria
+          description: Il sensore "SOC" della tua Solarbank 4
+          selector:
+            entity:
+              integration: anker_solix_official
+              domain: sensor
+        sensore_pv:
+          name: Sensore produzione solare
+          description: Il sensore "PV Power" della tua Solarbank 4
+          selector:
+            entity:
+              integration: anker_solix_official
+              domain: sensor
+        sensore_carico:
+          name: Sensore consumo di casa
+          description: Il sensore "Home Load" della tua Solarbank 4
+          selector:
+            entity:
+              integration: anker_solix_official
+              domain: sensor
+        sensore_p_max:
+          name: Sensore potenza massima erogabile
+          description: >-
+            Il sensore "Max Discharge Power" della tua Solarbank 4. Valore
+            live: si adatta a limiti app, temperatura e stato batteria.
+            Se vuoto, viene usato il valore manuale qui sotto.
+          default: ""
+          selector:
+            entity:
+              integration: anker_solix_official
+              domain: sensor
+        p_max_manuale:
+          name: Potenza massima erogabile (manuale)
+          description: Usata solo se il sensore qui sopra non è configurato
+          default: 2500
+          selector:
+            number:
+              min: 300
+              max: 2500
+              step: 100
+              unit_of_measurement: W
+        sensore_pv_extra:
+          name: Fotovoltaico di terze parti (facoltativo)
+          description: >-
+            Se hai un secondo impianto PV monitorato in Home Assistant
+            (anche non Anker), la sua produzione viene sommata a quella
+            principale.
+          default: ""
+          selector:
+            entity:
+              domain: sensor
+              device_class: power
+
+    # ================= COSA FARE COL SURPLUS =================
+    scelta_surplus:
+      name: Cosa vuoi fare con l'energia in eccesso?
+      description: >-
+        Scegli la destinazione del surplus solare, poi compila SOLO la
+        sezione corrispondente qui sotto.
+      default: acqua_calda
+      selector:
+        select:
+          options:
+            - label: "Ricaricare una power station"
+              value: power_station
+            - label: "Scaldare l'acqua calda sanitaria"
+              value: acqua_calda
+    p_carico:
+      name: Assorbimento del carico
+      description: >-
+        Quanto assorbe il carico durante il funzionamento: la potenza
+        elettrica della pompa di calore durante il boost ACS, la potenza
+        della resistenza, oppure la potenza di ricarica della power station
+        (molte permettono di limitarla dall'app: impostala e inserisci qui
+        lo stesso valore). Default: 1500 W.
+      default: 1500
+      selector:
+        number:
+          min: 0
+          max: 2500
+          step: 50
+          unit_of_measurement: W
+
+    # ================= CONFIG ACQUA CALDA =================
+    sezione_acs:
+      name: Configurazione Acqua Calda
+      icon: mdi:water-boiler
+      collapsed: true
+      description: Compila solo se hai scelto "Scaldare l'acqua calda sanitaria"
+      input:
+        tipo_acs:
+          name: Che tipo di sistema hai?
+          description: >-
+            Il tuo sistema di acqua calda consente di regolare la temperatura
+            da Home Assistant (pompa di calore o boiler smart integrato),
+            oppure funziona con la semplice accensione di una resistenza
+            elettrica / boiler elettrico tramite relè?
+          default: setpoint
+          selector:
+            select:
+              options:
+                - label: "Temperatura regolabile da Home Assistant (setpoint)"
+                  value: setpoint
+                - label: "Semplice accensione resistenza / boiler elettrico (relè)"
+                  value: rele
+        entita_setpoint:
+          name: "[Setpoint] Entità acqua calda"
+          description: >-
+            L'entità water_heater o climate del tuo sistema ACS
+            (es. water_heater.altherma di Daikin Onecta)
+          default: ""
+          selector:
+            entity:
+              domain:
+                - water_heater
+                - climate
+        temp_surplus:
+          name: "[Setpoint] Temperatura con surplus"
+          default: 55
+          selector:
+            number:
+              min: 40
+              max: 70
+              unit_of_measurement: "°C"
+        temp_standard:
+          name: "[Setpoint] Temperatura standard"
+          default: 45
+          selector:
+            number:
+              min: 30
+              max: 60
+              unit_of_measurement: "°C"
+        entita_rele_acs:
+          name: "[Resistenza] Relè della resistenza"
+          description: >-
+            L'entità switch del relè smart che alimenta la resistenza
+            (es. uno Shelly — per il collegamento vedi la Guida Smart Grid)
+          default: ""
+          selector:
+            entity:
+              domain: switch
+
+    # ================= CONFIG POWER STATION =================
+    sezione_ps:
+      name: Configurazione Power Station
+      icon: mdi:battery-charging
+      collapsed: true
+      description: Compila solo se hai scelto la modalità Power Station
+      input:
+        entita_rele_ps:
+          name: Relè / smart plug del caricatore
+          description: >-
+            L'entità switch della presa smart a cui è collegato il
+            caricatore della power station
+          default: ""
+          selector:
+            entity:
+              domain: switch
+
+    # ================= SOGLIE E COMPORTAMENTO =================
+    sezione_soglie:
+      name: Soglie e comportamento
+      icon: mdi:tune
+      collapsed: true
+      input:
+        soglia_soc_on:
+          name: SOC di attivazione
+          default: 95
+          selector:
+            number:
+              min: 50
+              max: 100
+              unit_of_measurement: "%"
+        soglia_soc_off:
+          name: SOC minimo di mantenimento
+          default: 50
+          selector:
+            number:
+              min: 5
+              max: 95
+              unit_of_measurement: "%"
+        ritardo_on:
+          name: Stabilità per attivazione (minuti)
+          default: 5
+          selector:
+            number:
+              min: 0
+              max: 60
+              unit_of_measurement: min
+        ritardo_off:
+          name: Stabilità per disattivazione (minuti)
+          default: 5
+          selector:
+            number:
+              min: 0
+              max: 60
+              unit_of_measurement: min
+        solo_di_giorno:
+          name: Solo con il sole
+          default: true
+          selector:
+            boolean:
+
+    # ================= SICUREZZA =================
+    sezione_sicurezza:
+      name: Sicurezza (facoltativo)
+      icon: mdi:shield-check
+      collapsed: true
+      input:
+        sensore_prelievo:
+          name: Sensore prelievo dalla rete
+          description: >-
+            Il sensore "Grid Import Power" della tua Solarbank 4. Se
+            configurato, il carico viene spento quando il prelievo dalla
+            rete supera la soglia sotto per 5 minuti.
+          default: ""
+          selector:
+            entity:
+              integration: anker_solix_official
+              domain: sensor
+        soglia_prelievo:
+          name: Prelievo massimo tollerato
+          default: 300
+          selector:
+            number:
+              min: 50
+              max: 2000
+              step: 50
+              unit_of_measurement: W
+
+mode: single
+max_exceeded: silent
+
+trigger_variables:
+  tv_soc: !input sensore_soc
+  tv_pv: !input sensore_pv
+  tv_pv_extra: !input sensore_pv_extra
+  tv_carico: !input sensore_carico
+  tv_p_max_ent: !input sensore_p_max
+  tv_p_max_man: !input p_max_manuale
+  tv_p_carico: !input p_carico
+  tv_soc_on: !input soglia_soc_on
+  tv_soc_off: !input soglia_soc_off
+  tv_prelievo_ent: !input sensore_prelievo
+  tv_soglia_prelievo: !input soglia_prelievo
+
+triggers:
+  # ===== ATTIVAZIONE =====
+  # SOC alto E carico casa sotto il margine (P_max − P_carico).
+  # Il template viene rivalutato ad ogni variazione dei sensori citati e
+  # scatta al passaggio falso→vero: nessuna condizione resta "non ricontrollata".
+  # Sensori non disponibili → default prudenti → il template resta falso.
+  - trigger: template
+    value_template: >-
+      {% set soc = states(tv_soc) | float(0) %}
+      {% set carico = states(tv_carico) | float(99999) %}
+      {% set p_max_s = states(tv_p_max_ent) | float(-1) if tv_p_max_ent else -1 %}
+      {% set p_max = p_max_s if p_max_s > 0 else tv_p_max_man | float %}
+      {{ soc > tv_soc_on | float
+         and carico < (p_max - tv_p_carico | float) }}
+    for:
+      minutes: !input ritardo_on
+    id: "on"
+
+  # ===== DISATTIVAZIONE =====
+  # SOC sotto il minimo OPPURE il sole non copre più il carico (con
+  # tolleranza /1,2: accetti ~un sesto del carico dalla batteria pur di
+  # non buttare in rete il resto del solare).
+  - trigger: template
+    value_template: >-
+      {% set soc = states(tv_soc) | float(0) %}
+      {% set pv = states(tv_pv) | float(0) %}
+      {% set pv2 = states(tv_pv_extra) | float(0) if tv_pv_extra else 0 %}
+      {{ soc < tv_soc_off | float
+         or (pv + pv2) < (tv_p_carico | float / 1.2) }}
+    for:
+      minutes: !input ritardo_off
+    id: "off"
+
+  # ===== SICUREZZA: prelievo dalla rete (solo se sensore configurato) =====
+  - trigger: template
+    value_template: >-
+      {{ tv_prelievo_ent != ""
+         and states(tv_prelievo_ent) | float(0) > tv_soglia_prelievo | float }}
+    for:
+      minutes: 5
+    id: "prelievo"
+
+  # ===== TRAMONTO =====
+  - trigger: sun
+    event: sunset
+    id: "tramonto"
+
+  # ===== WATCHDOG: sensori essenziali non disponibili =====
+  # Copre anche la caduta della connessione Modbus locale con la Solarbank.
+  - trigger: state
+    entity_id:
+      - !input sensore_soc
+      - !input sensore_pv
+      - !input sensore_carico
+    to:
+      - "unavailable"
+      - "unknown"
+    for:
+      minutes: 10
+    id: "guasto"
+
+variables:
+  _sensore_p_max: !input sensore_p_max
+  _p_max_manuale: !input p_max_manuale
+  _p_carico: !input p_carico
+  _solo_di_giorno: !input solo_di_giorno
+  _scelta_surplus: !input scelta_surplus
+  _tipo_acs: !input tipo_acs
+  # Modalità effettiva derivata dalle due domande del form:
+  # power_station, oppure (per l'acqua calda) setpoint / rele
+  _modalita: >-
+    {{ 'power_station' if _scelta_surplus == 'power_station' else _tipo_acs }}
+  _entita_setpoint: !input entita_setpoint
+  _entita_rele_acs: !input entita_rele_acs
+  _entita_rele_ps: !input entita_rele_ps
+  _p_max_attuale: >-
+    {% set pm = states(_sensore_p_max) | float(-1) if _sensore_p_max else -1 %}
+    {{ pm if pm > 0 else _p_max_manuale | float }}
+  # Il relè da comandare dipende dalla modalità scelta
+  _rele_attivo: >-
+    {% if _modalita == 'rele' %} {{ _entita_rele_acs }}
+    {% elif _modalita == 'power_station' %} {{ _entita_rele_ps }}
+    {% else %} {{ '' }}
+    {% endif %}
+  # Comando risultante da questo trigger: 'on', 'off' o nessuno
+  _comando: >-
+    {% if trigger.id == 'on' %} on
+    {% elif trigger.id in ['off', 'prelievo', 'guasto'] %} off
+    {% elif trigger.id == 'tramonto' and _solo_di_giorno %} off
+    {% else %} none
+    {% endif %}
+
+actions:
+  - choose:
+      # ----- Blocco con avviso: la Solarbank non può alimentare il carico -----
+      - conditions:
+          - condition: trigger
+            id: "on"
+          - condition: template
+            value_template: "{{ _p_max_attuale | float < _p_carico | float }}"
+        sequence:
+          - action: persistent_notification.create
+            data:
+              title: "⚠️ Surplus Solare: attivazione bloccata"
+              message: >-
+                La potenza massima erogabile dalla Solarbank
+                ({{ _p_max_attuale | round(0) }} W) è inferiore
+                all'assorbimento del carico ({{ _p_carico }} W).
+                Verifica il limite di uscita impostato nell'app Anker
+                (es. modalità 800 W) o correggi il valore del carico
+                nel blueprint.
+              notification_id: surplus_solare_p_max_warning
+
+      # ----- ATTIVAZIONE -----
+      - conditions:
+          - condition: template
+            value_template: "{{ _comando | trim == 'on' }}"
+          - condition: template
+            value_template: >-
+              {{ not _solo_di_giorno or is_state('sun.sun', 'above_horizon') }}
+        sequence:
+          - choose:
+              # ACS — setpoint su pompa di calore / boiler smart
+              - conditions:
+                  - condition: template
+                    value_template: >-
+                      {{ _modalita == 'setpoint'
+                         and _entita_setpoint.startswith('water_heater.') }}
+                sequence:
+                  - action: water_heater.set_temperature
+                    target:
+                      entity_id: !input entita_setpoint
+                    data:
+                      temperature: !input temp_surplus
+              - conditions:
+                  - condition: template
+                    value_template: >-
+                      {{ _modalita == 'setpoint'
+                         and _entita_setpoint.startswith('climate.') }}
+                sequence:
+                  - action: climate.set_temperature
+                    target:
+                      entity_id: !input entita_setpoint
+                    data:
+                      temperature: !input temp_surplus
+              # ACS resistenza o Power station — accensione relè
+              - conditions:
+                  - condition: template
+                    value_template: "{{ _rele_attivo | trim != '' }}"
+                sequence:
+                  - action: switch.turn_on
+                    target:
+                      entity_id: "{{ _rele_attivo | trim }}"
+            default:
+              - action: persistent_notification.create
+                data:
+                  title: "⚠️ Surplus Solare: configurazione incompleta"
+                  message: >-
+                    La modalità selezionata è "{{ _modalita }}" ma l'entità
+                    corrispondente non è configurata (o non è del tipo
+                    corretto). Apri il blueprint e completa la sezione
+                    relativa alla modalità scelta.
+                  notification_id: surplus_solare_config_warning
+
+      # ----- DISATTIVAZIONE (fine surplus / prelievo / tramonto / guasto) -----
+      - conditions:
+          - condition: template
+            value_template: "{{ _comando | trim == 'off' }}"
+        sequence:
+          - choose:
+              - conditions:
+                  - condition: template
+                    value_template: >-
+                      {{ _modalita == 'setpoint'
+                         and _entita_setpoint.startswith('water_heater.') }}
+                sequence:
+                  - action: water_heater.set_temperature
+                    target:
+                      entity_id: !input entita_setpoint
+                    data:
+                      temperature: !input temp_standard
+              - conditions:
+                  - condition: template
+                    value_template: >-
+                      {{ _modalita == 'setpoint'
+                         and _entita_setpoint.startswith('climate.') }}
+                sequence:
+                  - action: climate.set_temperature
+                    target:
+                      entity_id: !input entita_setpoint
+                    data:
+                      temperature: !input temp_standard
+              - conditions:
+                  - condition: template
+                    value_template: "{{ _rele_attivo | trim != '' }}"
+                sequence:
+                  - action: switch.turn_off
+                    target:
+                      entity_id: "{{ _rele_attivo | trim }}"
+
+  # ----- Notifica in caso di spegnimento per sensori non disponibili -----
+  - if:
+      - condition: trigger
+        id: "guasto"
+    then:
+      - action: persistent_notification.create
+        data:
+          title: "⚠️ Surplus Solare: sensori non disponibili"
+          message: >-
+            Uno o più sensori della Solarbank sono rimasti non disponibili
+            per oltre 10 minuti (possibile caduta della connessione Modbus
+            locale). Il carico è stato riportato allo stato di riposo per
+            sicurezza. Verifica l'integrazione Anker SOLIX Official.
+          notification_id: surplus_solare_guasto_warning
