@@ -2,32 +2,21 @@ blueprint:
   name: Anker SOLIX Solarbank 4 — Surplus Solare (DinamoTech)
   description: >-
     Sfrutta il surplus solare della tua Solarbank 4: quando la batteria è
-    carica e c'è margine di potenza, usa l'energia in eccesso per produrre
-    acqua calda sanitaria o per ricaricare una power station portatile,
-    e disattiva tutto quando il sole non copre più il carico.
+    carica e c'è margine di potenza, l'energia in eccesso scalda l'acqua
+    sanitaria o ricarica una power station, e tutto torna a riposo quando
+    il sole non copre più il carico. Richiede l'integrazione ufficiale
+    "Anker SOLIX Official" (Modbus TCP locale).
 
-    Richiede l'integrazione ufficiale "Anker SOLIX Official" (controllo
-    locale Modbus TCP). I menu a tendina mostrano solo i sensori Anker.
+    Configurazione in 3 passi: scegli i 3 sensori della Solarbank,
+    rispondi alle due domande, apri SOLO la sezione della modalità scelta.
+    Le altre sezioni hanno già default sensati: aprile solo se vuoi
+    regolare qualcosa.
 
-    Due domande per configurarlo:
-    1) Cosa vuoi fare con l'energia in eccesso? Ricaricare una power
-       station (via relè/smart plug) oppure scaldare l'acqua calda.
-    2) Se scegli l'acqua calda: il tuo sistema consente di regolare la
-       temperatura da Home Assistant (pompa di calore o boiler smart,
-       es. Daikin Altherma via Onecta) oppure si tratta della semplice
-       accensione di una resistenza / boiler elettrico via relè?
-       (es. Shelly — per il collegamento vedi la Guida Smart Grid
-       di DinamoTech)
+    Include: watchdog sensori non disponibili, blocco con avviso se la
+    potenza erogabile è insufficiente, spegnimento a power station carica,
+    soglia di sicurezza sul prelievo dalla rete.
 
-    Modello fisico a due parametri:
-    • ATTIVAZIONE: SOC > soglia alta E carico casa < (P_max − P_carico)
-    • MANTENIMENTO: SOC > soglia bassa E produzione solare > P_carico / 1,2
-
-    Include: watchdog sensori non disponibili (con spegnimento di sicurezza
-    e notifica), blocco con avviso se la potenza erogabile è inferiore al
-    carico, PV di terze parti opzionale, soglia di sicurezza opzionale sul
-    prelievo dalla rete, rilevamento opzionale di power station carica
-    tramite la misura di potenza della smart plug.
+    Guida completa: github.com/DinamoTechIT/ha-blueprints
 
     Creato da DinamoTech — dinamotech.it
   domain: automation
@@ -59,45 +48,6 @@ blueprint:
             entity:
               integration: anker_solix_official
               domain: sensor
-        p_max_manuale:
-          name: Potenza massima erogabile
-          description: >-
-            Il limite di scarica della tua Solarbank (es. 2500 W per la
-            Solarbank 4 E5000 Pro). Abbassalo se nell'app Anker hai
-            impostato un limite di uscita (es. modalità 800 W).
-          default: 2500
-          selector:
-            number:
-              min: 300
-              max: 2500
-              step: 100
-              unit_of_measurement: W
-        sensore_p_max:
-          name: Potenza massima erogabile live (avanzato, facoltativo)
-          description: >-
-            Lascia vuoto: l'integrazione attuale non espone un sensore
-            dedicato e vale il valore manuale qui sopra. Solo se usi il
-            controllo third-party puoi selezionare l'entità "Target Grid
-            Power": il limite live viene letto dal suo attributo
-            "max_discharge_power".
-          default: ""
-          selector:
-            entity:
-              integration: anker_solix_official
-              domain:
-                - sensor
-                - number
-        sensore_pv_extra:
-          name: Fotovoltaico di terze parti (facoltativo)
-          description: >-
-            Se hai un secondo impianto PV monitorato in Home Assistant
-            (anche non Anker), la sua produzione viene sommata a quella
-            principale.
-          default: ""
-          selector:
-            entity:
-              domain: sensor
-              device_class: power
 
     # ================= COSA FARE COL SURPLUS =================
     scelta_surplus:
@@ -240,11 +190,63 @@ blueprint:
               max: 60
               unit_of_measurement: min
 
-    # ================= SOGLIE E COMPORTAMENTO =================
+    # ================= AVANZATE =================
+    sezione_avanzate:
+      name: Avanzate
+      icon: mdi:cog-outline
+      collapsed: true
+      description: >-
+        Per gli smanettoni. I default vanno bene per la maggior parte
+        degli impianti: apri solo se sai cosa stai cercando.
+      input:
+        p_max_manuale:
+          name: Potenza massima erogabile
+          description: >-
+            Il limite di scarica della tua Solarbank (es. 2500 W per la
+            Solarbank 4 E5000 Pro). Abbassalo se nell'app Anker hai
+            impostato un limite di uscita (es. modalità 800 W).
+          default: 2500
+          selector:
+            number:
+              min: 300
+              max: 2500
+              step: 100
+              unit_of_measurement: W
+        sensore_p_max:
+          name: Potenza massima erogabile live (facoltativo)
+          description: >-
+            Lascia vuoto: l'integrazione attuale non espone un sensore
+            dedicato e vale il valore manuale qui sopra. Solo se usi il
+            controllo third-party puoi selezionare l'entità "Target Grid
+            Power": il limite live viene letto dal suo attributo
+            "max_discharge_power".
+          default: ""
+          selector:
+            entity:
+              integration: anker_solix_official
+              domain:
+                - sensor
+                - number
+        sensore_pv_extra:
+          name: Fotovoltaico di terze parti (facoltativo)
+          description: >-
+            Se hai un secondo impianto PV monitorato in Home Assistant
+            (anche non Anker), la sua produzione viene sommata a quella
+            principale.
+          default: ""
+          selector:
+            entity:
+              domain: sensor
+              device_class: power
+
+    # ================= SOGLIE E SICUREZZA =================
     sezione_soglie:
-      name: Soglie e comportamento
+      name: Soglie e sicurezza
       icon: mdi:tune
       collapsed: true
+      description: >-
+        Va bene così com'è: apri solo se vuoi regolare soglie, ritardi
+        o la protezione sul prelievo dalla rete.
       input:
         soglia_soc_on:
           name: SOC di attivazione
@@ -283,13 +285,6 @@ blueprint:
           default: true
           selector:
             boolean:
-
-    # ================= SICUREZZA =================
-    sezione_sicurezza:
-      name: Sicurezza (facoltativo)
-      icon: mdi:shield-check
-      collapsed: true
-      input:
         sensore_prelievo:
           name: Sensore prelievo dalla rete
           description: >-

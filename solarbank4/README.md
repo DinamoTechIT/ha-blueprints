@@ -33,12 +33,13 @@ E riporta tutto allo stato normale quando il surplus finisce, al tramonto, o se 
 
 ## ⚙️ Configurazione
 
-Il modulo ti fa **due domande**:
+A vista trovi solo l'essenziale:
 
-1. **Cosa vuoi fare con l'energia in eccesso?** → power station oppure acqua calda
-2. *(solo per l'acqua calda)* **Che tipo di sistema hai?** → temperatura regolabile da Home Assistant, oppure semplice accensione di una resistenza / boiler elettrico
+1. **I 3 sensori della Solarbank** (SOC, Solar Power, Home Load) — i menu mostrano solo le entità Anker
+2. **Cosa vuoi fare con l'energia in eccesso?** → power station oppure acqua calda
+3. **Assorbimento del carico** in watt
 
-Poi compila **solo la sezione** corrispondente alla tua scelta. I menu dei sensori mostrano solo le entità Anker: scegli quelle della tua Solarbank (SOC, Solar Power, Home Load).
+Poi apri **solo la sezione** della modalità scelta: *Configurazione Acqua Calda* (dove rispondi anche alla domanda sul tipo di sistema: setpoint o resistenza) oppure *Configurazione Power Station*. Le altre sezioni chiuse (*Avanzate*, *Soglie e sicurezza*) hanno già default sensati: aprile solo se vuoi regolare qualcosa.
 
 ### Parametri principali
 
@@ -77,6 +78,7 @@ Il blueprint è gratuito. Se ti fa risparmiare: [offrici un caffè via PayPal](h
 
 ## 📋 Changelog
 
+- **v1.2** — Form semplificato: a vista restano solo i 3 sensori, la scelta del surplus e l'assorbimento del carico; potenza massima, lettura live third-party e PV di terze parti sono nella nuova sezione chiusa *Avanzate*; *Soglie e comportamento* e *Sicurezza* sono ora un'unica sezione *Soglie e sicurezza*. Descrizione introduttiva accorciata. Solo riorganizzazione della presentazione: nessun input rimosso o rinominato, le automazioni esistenti non cambiano.
 - **v1.1.1** — Potenza massima erogabile: l'integrazione non espone il sensore "Max Discharge Power" (è un valore interno), quindi il valore manuale diventa l'impostazione principale. Il campo entità resta come opzione avanzata: in controllo third-party si può selezionare *Target Grid Power* e il limite viene letto live dal suo attributo `max_discharge_power`. Nessuna modifica necessaria alle automazioni esistenti.
 - **v1.1** — Rilevamento power station carica (opzionale): nuovo sensore di potenza della smart plug nella sezione Power Station; se la potenza resta sotto la soglia (default 25 W) per il tempo impostato (default 10 min) mentre la presa è accesa, la presa viene spenta. Le automazioni esistenti continuano a funzionare senza modifiche: basta Reimportare il blueprint.
 - **v1.0** — Prima release: modalità ACS setpoint / ACS resistenza / power station, modello fisico P_max−P_carico, watchdog sensori, blocco con avviso, PV terze parti opzionale, sicurezza sul prelievo rete.
