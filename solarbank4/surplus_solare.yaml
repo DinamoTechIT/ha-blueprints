@@ -59,20 +59,12 @@ blueprint:
             entity:
               integration: anker_solix_official
               domain: sensor
-        sensore_p_max:
-          name: Sensore potenza massima erogabile
-          description: >-
-            Il sensore "Max Discharge Power" della tua Solarbank 4. Valore
-            live: si adatta a limiti app, temperatura e stato batteria.
-            Se vuoto, viene usato il valore manuale qui sotto.
-          default: ""
-          selector:
-            entity:
-              integration: anker_solix_official
-              domain: sensor
         p_max_manuale:
-          name: Potenza massima erogabile (manuale)
-          description: Usata solo se il sensore qui sopra non è configurato
+          name: Potenza massima erogabile
+          description: >-
+            Il limite di scarica della tua Solarbank (es. 2500 W per la
+            Solarbank 4 E5000 Pro). Abbassalo se nell'app Anker hai
+            impostato un limite di uscita (es. modalità 800 W).
           default: 2500
           selector:
             number:
@@ -80,6 +72,21 @@ blueprint:
               max: 2500
               step: 100
               unit_of_measurement: W
+        sensore_p_max:
+          name: Potenza massima erogabile live (avanzato, facoltativo)
+          description: >-
+            Lascia vuoto: l'integrazione attuale non espone un sensore
+            dedicato e vale il valore manuale qui sopra. Solo se usi il
+            controllo third-party puoi selezionare l'entità "Target Grid
+            Power": il limite live viene letto dal suo attributo
+            "max_discharge_power".
+          default: ""
+          selector:
+            entity:
+              integration: anker_solix_official
+              domain:
+                - sensor
+                - number
         sensore_pv_extra:
           name: Fotovoltaico di terze parti (facoltativo)
           description: >-
@@ -334,8 +341,9 @@ triggers:
     value_template: >-
       {% set soc = states(tv_soc) | float(0) %}
       {% set carico = states(tv_carico) | float(99999) %}
-      {% set p_max_s = states(tv_p_max_ent) | float(-1) if tv_p_max_ent else -1 %}
-      {% set p_max = p_max_s if p_max_s > 0 else tv_p_max_man | float %}
+      {% set pm_attr = state_attr(tv_p_max_ent, 'max_discharge_power') | float(-1) if tv_p_max_ent else -1 %}
+      {% set pm_stato = states(tv_p_max_ent) | float(-1) if tv_p_max_ent.startswith('sensor.') else -1 %}
+      {% set p_max = pm_attr if pm_attr > 0 else (pm_stato if pm_stato > 0 else tv_p_max_man | float) %}
       {{ soc > tv_soc_on | float
          and carico < (p_max - tv_p_carico | float) }}
     for:
@@ -414,9 +422,12 @@ variables:
   _entita_setpoint: !input entita_setpoint
   _entita_rele_acs: !input entita_rele_acs
   _entita_rele_ps: !input entita_rele_ps
+  # Priorità: attributo max_discharge_power (Target Grid Power in modalità
+  # third-party) → stato, solo per entità sensor → valore manuale.
   _p_max_attuale: >-
-    {% set pm = states(_sensore_p_max) | float(-1) if _sensore_p_max else -1 %}
-    {{ pm if pm > 0 else _p_max_manuale | float }}
+    {% set pm_attr = state_attr(_sensore_p_max, 'max_discharge_power') | float(-1) if _sensore_p_max else -1 %}
+    {% set pm_stato = states(_sensore_p_max) | float(-1) if _sensore_p_max.startswith('sensor.') else -1 %}
+    {{ pm_attr if pm_attr > 0 else (pm_stato if pm_stato > 0 else _p_max_manuale | float) }}
   # Il relè da comandare dipende dalla modalità scelta
   _rele_attivo: >-
     {% if _modalita == 'rele' %} {{ _entita_rele_acs }}
@@ -447,9 +458,9 @@ actions:
                 La potenza massima erogabile dalla Solarbank
                 ({{ _p_max_attuale | round(0) }} W) è inferiore
                 all'assorbimento del carico ({{ _p_carico }} W).
-                Verifica il limite di uscita impostato nell'app Anker
-                (es. modalità 800 W) o correggi il valore del carico
-                nel blueprint.
+                Verifica il valore "Potenza massima erogabile" nel
+                blueprint e il limite di uscita impostato nell'app Anker
+                (es. modalità 800 W), o correggi il valore del carico.
               notification_id: surplus_solare_p_max_warning
 
       # ----- ATTIVAZIONE -----

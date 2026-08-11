@@ -38,13 +38,14 @@ Il modulo ti fa **due domande**:
 1. **Cosa vuoi fare con l'energia in eccesso?** → power station oppure acqua calda
 2. *(solo per l'acqua calda)* **Che tipo di sistema hai?** → temperatura regolabile da Home Assistant, oppure semplice accensione di una resistenza / boiler elettrico
 
-Poi compila **solo la sezione** corrispondente alla tua scelta. I menu dei sensori mostrano solo le entità Anker: scegli quelle della tua Solarbank (SOC, Solar Power, Home Load, Max Discharge Power).
+Poi compila **solo la sezione** corrispondente alla tua scelta. I menu dei sensori mostrano solo le entità Anker: scegli quelle della tua Solarbank (SOC, Solar Power, Home Load).
 
 ### Parametri principali
 
 | Parametro | Default | Note |
 |---|---|---|
 | Assorbimento del carico | 1500 W | Potenza della PdC in boost ACS, della resistenza o del caricatore della power station. 💡 Molte power station permettono di limitare la potenza di ricarica dall'app: impostala e inserisci qui lo stesso valore |
+| Potenza massima erogabile | 2500 W | Il limite di scarica della tua Solarbank. Abbassalo se nell'app Anker hai impostato un limite di uscita (es. modalità 800 W) |
 | SOC di attivazione | 95 % | Il surplus è disponibile sopra questa carica |
 | SOC minimo di mantenimento | 50 % | Sotto questa carica il carico viene spento |
 | Stabilità attivazione/disattivazione | 5 min | Filtra nuvole e picchi di consumo |
@@ -58,7 +59,7 @@ Poi compila **solo la sezione** corrispondente alla tua scelta. I menu dei senso
 - **Attivazione**: batteria carica **e** consumo di casa < (potenza massima erogabile − assorbimento del carico). Così quando il carico parte, la Solarbank copre tutto senza prelevare dalla rete.
 - **Mantenimento**: il carico resta attivo finché il sole produce almeno l'assorbimento del carico **÷ 1,2** — accetti un piccolo contributo dalla batteria pur di non regalare alla rete il resto del solare.
 
-La potenza massima erogabile viene letta **in tempo reale** dal sensore *Max Discharge Power*: se abbassi il limite di uscita nell'app Anker (es. modalità 800 W), il blueprint se ne accorge da solo e, se il carico non è più alimentabile, ti avvisa con una notifica invece di attivarsi.
+La potenza massima erogabile si imposta a mano (l'integrazione attuale non espone un sensore dedicato): se abbassi il limite di uscita nell'app Anker, aggiorna anche il valore nel blueprint. Se il carico non è alimentabile con il limite impostato, il blueprint ti avvisa con una notifica invece di attivarsi. Utenti avanzati in **controllo third-party**: nel campo facoltativo potete selezionare l'entità *Target Grid Power* e il limite verrà letto **in tempo reale** dal suo attributo `max_discharge_power`.
 
 ## ⚠️ Limitazioni note
 
@@ -76,5 +77,6 @@ Il blueprint è gratuito. Se ti fa risparmiare: [offrici un caffè via PayPal](h
 
 ## 📋 Changelog
 
+- **v1.1.1** — Potenza massima erogabile: l'integrazione non espone il sensore "Max Discharge Power" (è un valore interno), quindi il valore manuale diventa l'impostazione principale. Il campo entità resta come opzione avanzata: in controllo third-party si può selezionare *Target Grid Power* e il limite viene letto live dal suo attributo `max_discharge_power`. Nessuna modifica necessaria alle automazioni esistenti.
 - **v1.1** — Rilevamento power station carica (opzionale): nuovo sensore di potenza della smart plug nella sezione Power Station; se la potenza resta sotto la soglia (default 25 W) per il tempo impostato (default 10 min) mentre la presa è accesa, la presa viene spenta. Le automazioni esistenti continuano a funzionare senza modifiche: basta Reimportare il blueprint.
 - **v1.0** — Prima release: modalità ACS setpoint / ACS resistenza / power station, modello fisico P_max−P_carico, watchdog sensori, blocco con avviso, PV terze parti opzionale, sicurezza sul prelievo rete.
