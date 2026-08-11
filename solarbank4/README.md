@@ -38,7 +38,7 @@ Il modulo ti fa **due domande**:
 1. **Cosa vuoi fare con l'energia in eccesso?** → power station oppure acqua calda
 2. *(solo per l'acqua calda)* **Che tipo di sistema hai?** → temperatura regolabile da Home Assistant, oppure semplice accensione di una resistenza / boiler elettrico
 
-Poi compila **solo la sezione** corrispondente alla tua scelta. I menu dei sensori mostrano solo le entità Anker: scegli quelle della tua Solarbank (SOC, PV Power, Home Load, Max Discharge Power).
+Poi compila **solo la sezione** corrispondente alla tua scelta. I menu dei sensori mostrano solo le entità Anker: scegli quelle della tua Solarbank (SOC, Solar Power, Home Load, Max Discharge Power).
 
 ### Parametri principali
 

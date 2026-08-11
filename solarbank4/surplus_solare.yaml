@@ -47,7 +47,7 @@ blueprint:
               domain: sensor
         sensore_pv:
           name: Sensore produzione solare
-          description: Il sensore "PV Power" della tua Solarbank 4
+          description: Il sensore "Solar Power" della tua Solarbank 4
           selector:
             entity:
               integration: anker_solix_official
