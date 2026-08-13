@@ -340,7 +340,11 @@ trigger_variables:
   tv_prelievo_ent: !input sensore_prelievo
   tv_soglia_prelievo: !input soglia_prelievo
   tv_scelta: !input scelta_surplus
+  tv_tipo_acs: !input tipo_acs
   tv_rele_ps: !input entita_rele_ps
+  tv_rele_acs: !input entita_rele_acs
+  tv_setpoint_ent: !input entita_setpoint
+  tv_temp_surplus: !input temp_surplus
   tv_potenza_ps_ent: !input sensore_potenza_ps
   tv_soglia_potenza_ps: !input soglia_potenza_ps
 
@@ -364,21 +368,49 @@ triggers:
   # SOC sotto il minimo OPPURE il sole non copre più il carico (con
   # tolleranza /1,2: accetti ~un sesto del carico dalla batteria pur di
   # non buttare in rete il resto del solare).
+  # Valutata SOLO a carico attivo: in autoconsumo zero il PV è strozzato
+  # sulla domanda di casa e il template sarebbe già vero prima
+  # dell'attivazione — senza il gate non ci sarebbe mai la transizione
+  # falso→vero e il trigger non scatterebbe. Così ogni attivazione
+  # ri-arma il controllo. Stato attivo: relè acceso (modalità a relè)
+  # o setpoint alla temperatura surplus (modalità ACS setpoint; se
+  # l'attributo temperature non esiste, si assume attivo per prudenza).
   - trigger: template
     value_template: >-
+      {% set modalita = 'power_station' if tv_scelta == 'power_station' else tv_tipo_acs %}
+      {% if modalita == 'power_station' %}
+        {% set attivo = tv_rele_ps != "" and is_state(tv_rele_ps, 'on') %}
+      {% elif modalita == 'rele' %}
+        {% set attivo = tv_rele_acs != "" and is_state(tv_rele_acs, 'on') %}
+      {% else %}
+        {% set t = state_attr(tv_setpoint_ent, 'temperature') if tv_setpoint_ent else none %}
+        {% set attivo = t is none or t | float(0) >= tv_temp_surplus | float %}
+      {% endif %}
       {% set soc = states(tv_soc) | float(0) %}
       {% set pv = states(tv_pv) | float(0) %}
       {% set pv2 = states(tv_pv_extra) | float(0) if tv_pv_extra else 0 %}
-      {{ soc < tv_soc_off | float
-         or (pv + pv2) < (tv_p_carico | float / 1.2) }}
+      {{ attivo
+         and (soc < tv_soc_off | float
+              or (pv + pv2) < (tv_p_carico | float / 1.2)) }}
     for:
       minutes: !input ritardo_off
     id: "off"
 
   # ===== SICUREZZA: prelievo dalla rete (solo se sensore configurato) =====
+  # Stesso gate sul carico attivo, per lo stesso motivo del trigger sopra.
   - trigger: template
     value_template: >-
+      {% set modalita = 'power_station' if tv_scelta == 'power_station' else tv_tipo_acs %}
+      {% if modalita == 'power_station' %}
+        {% set attivo = tv_rele_ps != "" and is_state(tv_rele_ps, 'on') %}
+      {% elif modalita == 'rele' %}
+        {% set attivo = tv_rele_acs != "" and is_state(tv_rele_acs, 'on') %}
+      {% else %}
+        {% set t = state_attr(tv_setpoint_ent, 'temperature') if tv_setpoint_ent else none %}
+        {% set attivo = t is none or t | float(0) >= tv_temp_surplus | float %}
+      {% endif %}
       {{ tv_prelievo_ent != ""
+         and attivo
          and states(tv_prelievo_ent) | float(0) > tv_soglia_prelievo | float }}
     for:
       minutes: 5

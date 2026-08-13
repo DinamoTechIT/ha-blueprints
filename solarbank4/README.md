@@ -60,6 +60,8 @@ Poi apri **solo la sezione** della modalità scelta: *Configurazione Acqua Calda
 - **Attivazione**: batteria carica **e** consumo di casa < (potenza massima erogabile − assorbimento del carico). Così quando il carico parte, la Solarbank copre tutto senza prelevare dalla rete.
 - **Mantenimento**: il carico resta attivo finché il sole produce almeno l'assorbimento del carico **÷ 1,2** — accetti un piccolo contributo dalla batteria pur di non regalare alla rete il resto del solare.
 
+Le condizioni di spegnimento (fine surplus, prelievo dalla rete) sono valutate **solo mentre il carico è attivo**: ogni attivazione ri-arma i controlli. Il dettaglio conta con l'**immissione zero** (configurazione tipica in Italia): a batteria piena la Solarbank strozza la produzione sulla domanda di casa, quindi il sensore solare legge valori bassi anche in pieno sole — senza questo accorgimento lo spegnimento potrebbe non scattare quando serve.
+
 La potenza massima erogabile si imposta a mano (l'integrazione attuale non espone un sensore dedicato): se abbassi il limite di uscita nell'app Anker, aggiorna anche il valore nel blueprint. Se il carico non è alimentabile con il limite impostato, il blueprint ti avvisa con una notifica invece di attivarsi.
 
 ## ⚠️ Limitazioni note
