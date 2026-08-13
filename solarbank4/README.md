@@ -60,7 +60,7 @@ Poi apri **solo la sezione** della modalità scelta: *Configurazione Acqua Calda
 - **Attivazione**: batteria carica **e** consumo di casa < (potenza massima erogabile − assorbimento del carico). Così quando il carico parte, la Solarbank copre tutto senza prelevare dalla rete.
 - **Mantenimento**: il carico resta attivo finché il sole produce almeno l'assorbimento del carico **÷ 1,2** — accetti un piccolo contributo dalla batteria pur di non regalare alla rete il resto del solare.
 
-La potenza massima erogabile si imposta a mano (l'integrazione attuale non espone un sensore dedicato): se abbassi il limite di uscita nell'app Anker, aggiorna anche il valore nel blueprint. Se il carico non è alimentabile con il limite impostato, il blueprint ti avvisa con una notifica invece di attivarsi. Utenti avanzati in **controllo third-party**: nel campo facoltativo potete selezionare l'entità *Target Grid Power* e il limite verrà letto **in tempo reale** dal suo attributo `max_discharge_power`.
+La potenza massima erogabile si imposta a mano (l'integrazione attuale non espone un sensore dedicato): se abbassi il limite di uscita nell'app Anker, aggiorna anche il valore nel blueprint. Se il carico non è alimentabile con il limite impostato, il blueprint ti avvisa con una notifica invece di attivarsi.
 
 ## ⚠️ Limitazioni note
 
@@ -78,6 +78,7 @@ Il blueprint è gratuito. Se ti fa risparmiare: [offrici un caffè via PayPal](h
 
 ## 📋 Changelog
 
+- **v1.3** — Pulizia pre-release: rimossi l'interruttore "Spegni al tramonto" (ora comportamento fisso: al tramonto il carico torna sempre a riposo e l'attivazione avviene solo con il sole sopra l'orizzonte) e il campo avanzato di lettura live della potenza massima (vale il valore manuale; il campo tornerà se l'integrazione esporrà un sensore dedicato). ⚠️ Le automazioni create con versioni precedenti vanno ricreate.
 - **v1.2.1** — Testi del form più chiari: "Assorbimento del carico" diventa "Potenza del carico da alimentare" con i tre casi a elenco; i tag [Setpoint]/[Resistenza] compaiono anche nelle opzioni della domanda sul tipo di sistema e ogni campo ACS dichiara per quale scelta va compilato; descrizioni aggiunte a soglie SOC e tempi di stabilità; "Solo con il sole" diventa "Spegni al tramonto" con spiegazione. Nessuna modifica alla logica.
 - **v1.2** — Form semplificato: a vista restano solo i 3 sensori, la scelta del surplus e l'assorbimento del carico; potenza massima, lettura live third-party e PV di terze parti sono nella nuova sezione chiusa *Avanzate*; *Soglie e comportamento* e *Sicurezza* sono ora un'unica sezione *Soglie e sicurezza*. Descrizione introduttiva accorciata. Solo riorganizzazione della presentazione: nessun input rimosso o rinominato, le automazioni esistenti non cambiano.
 - **v1.1.1** — Potenza massima erogabile: l'integrazione non espone il sensore "Max Discharge Power" (è un valore interno), quindi il valore manuale diventa l'impostazione principale. Il campo entità resta come opzione avanzata: in controllo third-party si può selezionare *Target Grid Power* e il limite viene letto live dal suo attributo `max_discharge_power`. Nessuna modifica necessaria alle automazioni esistenti.

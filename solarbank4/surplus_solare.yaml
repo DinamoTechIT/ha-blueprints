@@ -226,21 +226,6 @@ blueprint:
               max: 2500
               step: 100
               unit_of_measurement: W
-        sensore_p_max:
-          name: Potenza massima erogabile live (facoltativo)
-          description: >-
-            Lascia vuoto: l'integrazione attuale non espone un sensore
-            dedicato e vale il valore manuale qui sopra. Solo se usi il
-            controllo third-party puoi selezionare l'entità "Target Grid
-            Power": il limite live viene letto dal suo attributo
-            "max_discharge_power".
-          default: ""
-          selector:
-            entity:
-              integration: anker_solix_official
-              domain:
-                - sensor
-                - number
         sensore_pv_extra:
           name: Fotovoltaico di terze parti (facoltativo)
           description: >-
@@ -311,15 +296,6 @@ blueprint:
               min: 0
               max: 60
               unit_of_measurement: min
-        solo_di_giorno:
-          name: Spegni al tramonto
-          description: >-
-            Al tramonto il carico torna in ogni caso a riposo. Lascialo
-            attivo: è una rete di sicurezza in più oltre allo spegnimento
-            per produzione insufficiente, che di notte interviene comunque.
-          default: true
-          selector:
-            boolean:
         sensore_prelievo:
           name: Sensore prelievo dalla rete
           description: >-
@@ -349,7 +325,6 @@ trigger_variables:
   tv_pv: !input sensore_pv
   tv_pv_extra: !input sensore_pv_extra
   tv_carico: !input sensore_carico
-  tv_p_max_ent: !input sensore_p_max
   tv_p_max_man: !input p_max_manuale
   tv_p_carico: !input p_carico
   tv_soc_on: !input soglia_soc_on
@@ -371,11 +346,8 @@ triggers:
     value_template: >-
       {% set soc = states(tv_soc) | float(0) %}
       {% set carico = states(tv_carico) | float(99999) %}
-      {% set pm_attr = state_attr(tv_p_max_ent, 'max_discharge_power') | float(-1) if tv_p_max_ent else -1 %}
-      {% set pm_stato = states(tv_p_max_ent) | float(-1) if tv_p_max_ent.startswith('sensor.') else -1 %}
-      {% set p_max = pm_attr if pm_attr > 0 else (pm_stato if pm_stato > 0 else tv_p_max_man | float) %}
       {{ soc > tv_soc_on | float
-         and carico < (p_max - tv_p_carico | float) }}
+         and carico < (tv_p_max_man | float - tv_p_carico | float) }}
     for:
       minutes: !input ritardo_on
     id: "on"
@@ -439,10 +411,8 @@ triggers:
     id: "guasto"
 
 variables:
-  _sensore_p_max: !input sensore_p_max
-  _p_max_manuale: !input p_max_manuale
+  _p_max_attuale: !input p_max_manuale
   _p_carico: !input p_carico
-  _solo_di_giorno: !input solo_di_giorno
   _scelta_surplus: !input scelta_surplus
   _tipo_acs: !input tipo_acs
   # Modalità effettiva derivata dalle due domande del form:
@@ -452,12 +422,6 @@ variables:
   _entita_setpoint: !input entita_setpoint
   _entita_rele_acs: !input entita_rele_acs
   _entita_rele_ps: !input entita_rele_ps
-  # Priorità: attributo max_discharge_power (Target Grid Power in modalità
-  # third-party) → stato, solo per entità sensor → valore manuale.
-  _p_max_attuale: >-
-    {% set pm_attr = state_attr(_sensore_p_max, 'max_discharge_power') | float(-1) if _sensore_p_max else -1 %}
-    {% set pm_stato = states(_sensore_p_max) | float(-1) if _sensore_p_max.startswith('sensor.') else -1 %}
-    {{ pm_attr if pm_attr > 0 else (pm_stato if pm_stato > 0 else _p_max_manuale | float) }}
   # Il relè da comandare dipende dalla modalità scelta
   _rele_attivo: >-
     {% if _modalita == 'rele' %} {{ _entita_rele_acs }}
@@ -468,7 +432,7 @@ variables:
   _comando: >-
     {% if trigger.id == 'on' %} on
     {% elif trigger.id in ['off', 'prelievo', 'guasto', 'ps_piena'] %} off
-    {% elif trigger.id == 'tramonto' and _solo_di_giorno %} off
+    {% elif trigger.id == 'tramonto' %} off
     {% else %} none
     {% endif %}
 
@@ -498,8 +462,7 @@ actions:
           - condition: template
             value_template: "{{ _comando | trim == 'on' }}"
           - condition: template
-            value_template: >-
-              {{ not _solo_di_giorno or is_state('sun.sun', 'above_horizon') }}
+            value_template: "{{ is_state('sun.sun', 'above_horizon') }}"
         sequence:
           - choose:
               # ACS — setpoint su pompa di calore / boiler smart
