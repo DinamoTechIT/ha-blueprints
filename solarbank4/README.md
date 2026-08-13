@@ -37,7 +37,7 @@ A vista trovi solo l'essenziale:
 
 1. **I 3 sensori della Solarbank** (SOC, Solar Power, Home Load) — i menu mostrano solo le entità Anker
 2. **Cosa vuoi fare con l'energia in eccesso?** → power station oppure acqua calda
-3. **Assorbimento del carico** in watt
+3. **Potenza del carico da alimentare** in watt
 
 Poi apri **solo la sezione** della modalità scelta: *Configurazione Acqua Calda* (dove rispondi anche alla domanda sul tipo di sistema: setpoint o resistenza) oppure *Configurazione Power Station*. Le altre sezioni chiuse (*Avanzate*, *Soglie e sicurezza*) hanno già default sensati: aprile solo se vuoi regolare qualcosa.
 
@@ -45,7 +45,7 @@ Poi apri **solo la sezione** della modalità scelta: *Configurazione Acqua Calda
 
 | Parametro | Default | Note |
 |---|---|---|
-| Assorbimento del carico | 1500 W | Potenza della PdC in boost ACS, della resistenza o del caricatore della power station. 💡 Molte power station permettono di limitare la potenza di ricarica dall'app: impostala e inserisci qui lo stesso valore |
+| Potenza del carico da alimentare | 1500 W | Potenza della PdC in boost ACS, della resistenza o del caricatore della power station. 💡 Molte power station permettono di limitare la potenza di ricarica dall'app: impostala e inserisci qui lo stesso valore |
 | Potenza massima erogabile | 2500 W | Il limite di scarica della tua Solarbank. Abbassalo se nell'app Anker hai impostato un limite di uscita (es. modalità 800 W) |
 | SOC di attivazione | 95 % | Il surplus è disponibile sopra questa carica |
 | SOC minimo di mantenimento | 50 % | Sotto questa carica il carico viene spento |
@@ -78,6 +78,7 @@ Il blueprint è gratuito. Se ti fa risparmiare: [offrici un caffè via PayPal](h
 
 ## 📋 Changelog
 
+- **v1.2.1** — Testi del form più chiari: "Assorbimento del carico" diventa "Potenza del carico da alimentare" con i tre casi a elenco; i tag [Setpoint]/[Resistenza] compaiono anche nelle opzioni della domanda sul tipo di sistema e ogni campo ACS dichiara per quale scelta va compilato; descrizioni aggiunte a soglie SOC e tempi di stabilità; "Solo con il sole" diventa "Spegni al tramonto" con spiegazione. Nessuna modifica alla logica.
 - **v1.2** — Form semplificato: a vista restano solo i 3 sensori, la scelta del surplus e l'assorbimento del carico; potenza massima, lettura live third-party e PV di terze parti sono nella nuova sezione chiusa *Avanzate*; *Soglie e comportamento* e *Sicurezza* sono ora un'unica sezione *Soglie e sicurezza*. Descrizione introduttiva accorciata. Solo riorganizzazione della presentazione: nessun input rimosso o rinominato, le automazioni esistenti non cambiano.
 - **v1.1.1** — Potenza massima erogabile: l'integrazione non espone il sensore "Max Discharge Power" (è un valore interno), quindi il valore manuale diventa l'impostazione principale. Il campo entità resta come opzione avanzata: in controllo third-party si può selezionare *Target Grid Power* e il limite viene letto live dal suo attributo `max_discharge_power`. Nessuna modifica necessaria alle automazioni esistenti.
 - **v1.1** — Rilevamento power station carica (opzionale): nuovo sensore di potenza della smart plug nella sezione Power Station; se la potenza resta sotto la soglia (default 25 W) per il tempo impostato (default 10 min) mentre la presa è accesa, la presa viene spenta. Le automazioni esistenti continuano a funzionare senza modifiche: basta Reimportare il blueprint.

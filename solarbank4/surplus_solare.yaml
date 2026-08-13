@@ -64,13 +64,13 @@ blueprint:
             - label: "Scaldare l'acqua calda sanitaria"
               value: acqua_calda
     p_carico:
-      name: Assorbimento del carico
-      description: >-
-        Quanto assorbe il carico durante il funzionamento: la potenza
-        elettrica della pompa di calore durante il boost ACS, la potenza
-        della resistenza, oppure la potenza di ricarica della power station
-        (molte permettono di limitarla dall'app: impostala e inserisci qui
-        lo stesso valore). Default: 1500 W.
+      name: Potenza del carico da alimentare
+      description: |-
+        Quanto assorbe il carico quando è acceso, in base alla modalità scelta:
+
+        - **Acqua calda con setpoint** → la potenza elettrica della pompa di calore durante il boost ACS
+        - **Acqua calda con resistenza** → la potenza della resistenza
+        - **Power station** → la potenza di ricarica del caricatore (molte power station permettono di limitarla dall'app: impostala e inserisci qui lo stesso valore)
       default: 1500
       selector:
         number:
@@ -84,7 +84,9 @@ blueprint:
       name: Configurazione Acqua Calda
       icon: mdi:water-boiler
       collapsed: true
-      description: Compila solo se hai scelto "Scaldare l'acqua calda sanitaria"
+      description: >-
+        Compila SOLO se hai scelto "Scaldare l'acqua calda sanitaria".
+        Se hai scelto la power station, salta questa sezione.
       input:
         tipo_acs:
           name: Che tipo di sistema hai?
@@ -92,20 +94,23 @@ blueprint:
             Il tuo sistema di acqua calda consente di regolare la temperatura
             da Home Assistant (pompa di calore o boiler smart integrato),
             oppure funziona con la semplice accensione di una resistenza
-            elettrica / boiler elettrico tramite relè?
+            elettrica / boiler elettrico tramite relè? In base alla risposta,
+            qui sotto compila SOLO i campi [Setpoint] oppure SOLO quelli
+            [Resistenza].
           default: setpoint
           selector:
             select:
               options:
-                - label: "Temperatura regolabile da Home Assistant (setpoint)"
+                - label: "[Setpoint] Temperatura regolabile da Home Assistant"
                   value: setpoint
-                - label: "Semplice accensione resistenza / boiler elettrico (relè)"
+                - label: "[Resistenza] Semplice accensione resistenza / boiler elettrico via relè"
                   value: rele
         entita_setpoint:
           name: "[Setpoint] Entità acqua calda"
           description: >-
-            L'entità water_heater o climate del tuo sistema ACS
-            (es. water_heater.altherma di Daikin Onecta)
+            Solo se sopra hai scelto [Setpoint]: l'entità water_heater o
+            climate del tuo sistema ACS (es. water_heater.altherma di
+            Daikin Onecta)
           default: ""
           selector:
             entity:
@@ -114,6 +119,9 @@ blueprint:
                 - climate
         temp_surplus:
           name: "[Setpoint] Temperatura con surplus"
+          description: >-
+            Solo se sopra hai scelto [Setpoint]: la temperatura dell'acqua
+            quando c'è surplus solare da sfruttare
           default: 55
           selector:
             number:
@@ -122,6 +130,9 @@ blueprint:
               unit_of_measurement: "°C"
         temp_standard:
           name: "[Setpoint] Temperatura standard"
+          description: >-
+            Solo se sopra hai scelto [Setpoint]: la temperatura normale,
+            ripristinata quando il surplus finisce
           default: 45
           selector:
             number:
@@ -131,8 +142,9 @@ blueprint:
         entita_rele_acs:
           name: "[Resistenza] Relè della resistenza"
           description: >-
-            L'entità switch del relè smart che alimenta la resistenza
-            (es. uno Shelly — per il collegamento vedi la Guida Smart Grid)
+            Solo se sopra hai scelto [Resistenza]: l'entità switch del relè
+            smart che alimenta la resistenza (es. uno Shelly — per il
+            collegamento vedi la Guida Smart Grid)
           default: ""
           selector:
             entity:
@@ -143,7 +155,9 @@ blueprint:
       name: Configurazione Power Station
       icon: mdi:battery-charging
       collapsed: true
-      description: Compila solo se hai scelto la modalità Power Station
+      description: >-
+        Compila SOLO se hai scelto "Ricaricare una power station".
+        Se hai scelto l'acqua calda, salta questa sezione.
       input:
         entita_rele_ps:
           name: Relè / smart plug del caricatore
@@ -250,6 +264,10 @@ blueprint:
       input:
         soglia_soc_on:
           name: SOC di attivazione
+          description: >-
+            Il carico parte solo quando la batteria della Solarbank supera
+            questa carica: sotto, il sole serve prima a riempire la
+            batteria. È il tuo "surplus disponibile".
           default: 95
           selector:
             number:
@@ -259,6 +277,11 @@ blueprint:
         soglia_soc_off:
           name: SOC minimo di mantenimento
           default: 50
+          description: >-
+            Una volta partito, il carico resta acceso anche se la batteria
+            scende sotto il SOC di attivazione — ma se arriva fin sotto
+            questa soglia viene spento: significa che stai attingendo
+            troppo dall'accumulo.
           selector:
             number:
               min: 5
@@ -266,6 +289,10 @@ blueprint:
               unit_of_measurement: "%"
         ritardo_on:
           name: Stabilità per attivazione (minuti)
+          description: >-
+            Le condizioni di attivazione devono restare vere per questi
+            minuti prima di accendere il carico: evita partenze inutili
+            per un picco di sole o un calo momentaneo dei consumi.
           default: 5
           selector:
             number:
@@ -274,6 +301,10 @@ blueprint:
               unit_of_measurement: min
         ritardo_off:
           name: Stabilità per disattivazione (minuti)
+          description: >-
+            Le condizioni di spegnimento devono restare vere per questi
+            minuti prima di spegnere il carico: una nuvola di passaggio
+            non interrompe il funzionamento.
           default: 5
           selector:
             number:
@@ -281,7 +312,11 @@ blueprint:
               max: 60
               unit_of_measurement: min
         solo_di_giorno:
-          name: Solo con il sole
+          name: Spegni al tramonto
+          description: >-
+            Al tramonto il carico torna in ogni caso a riposo. Lascialo
+            attivo: è una rete di sicurezza in più oltre allo spegnimento
+            per produzione insufficiente, che di notte interviene comunque.
           default: true
           selector:
             boolean:
