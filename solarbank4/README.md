@@ -51,7 +51,7 @@ Poi apri **solo la sezione** della modalità scelta: *Configurazione Acqua Calda
 | SOC minimo di mantenimento | 50 % | Sotto questa carica il carico viene spento |
 | Stabilità attivazione/disattivazione | 5 min | Filtra nuvole e picchi di consumo |
 | Prelievo massimo tollerato (facoltativo) | 300 W | Rete di sicurezza: spegne il carico se prelevi dalla rete |
-| Sensore potenza smart plug (facoltativo) | — | Solo modalità power station: se la presa smart misura la potenza, la ricarica completata viene rilevata e la presa spenta |
+| Sensore della potenza assorbita (facoltativo) | — | Solo modalità power station: se la presa smart o il relè misurano la potenza, la ricarica completata viene rilevata e la presa spenta |
 | Potenza minima di ricarica | 25 W | Sotto questa potenza la power station è considerata carica |
 | Durata sotto soglia | 10 min | Tempo di conferma prima dello spegnimento (copre anche la rampa iniziale di ricarica) |
 
@@ -64,7 +64,7 @@ La potenza massima erogabile si imposta a mano (l'integrazione attuale non espon
 
 ## ⚠️ Limitazioni note
 
-- **Power station piena**: se la presa smart non misura la potenza (o il sensore non è configurato), il blueprint non rileva la fine della ricarica e la presa resta alimentata (a vuoto, nessun danno) fino a fine surplus. Con una smart plug con misura di potenza, configura il sensore nella sezione Power Station e la presa si spegne da sola a ricarica completata.
+- **Power station piena**: se la presa o il relè non misurano la potenza (o il sensore non è configurato), il blueprint non rileva la fine della ricarica e la presa resta alimentata (a vuoto, nessun danno) fino a fine surplus. Con una presa smart o un relè dotati di misura di potenza, configura il sensore nella sezione Power Station e la presa si spegne da sola a ricarica completata.
 - **Modulo non dinamico**: i blueprint di Home Assistant mostrano sempre tutte le sezioni; compila solo quella della modalità scelta, le altre vengono ignorate.
 - Il blueprint controlla **un carico**: per più carichi in cascata, crea più automazioni dallo stesso blueprint (con soglie diverse) — o aspetta il blueprint dedicato 😉
 
@@ -78,7 +78,7 @@ Il blueprint è gratuito. Se ti fa risparmiare: [offrici un caffè via PayPal](h
 
 ## 📋 Changelog
 
-- **v1.3** — Pulizia pre-release: rimossi l'interruttore "Spegni al tramonto" (ora comportamento fisso: al tramonto il carico torna sempre a riposo e l'attivazione avviene solo con il sole sopra l'orizzonte) e il campo avanzato di lettura live della potenza massima (vale il valore manuale; il campo tornerà se l'integrazione esporrà un sensore dedicato). ⚠️ Le automazioni create con versioni precedenti vanno ricreate.
+- **v1.3** — Pulizia pre-release: rimossi l'interruttore "Spegni al tramonto" (ora comportamento fisso: al tramonto il carico torna sempre a riposo e l'attivazione avviene solo con il sole sopra l'orizzonte) e il campo avanzato di lettura live della potenza massima (vale il valore manuale; il campo tornerà se l'integrazione esporrà un sensore dedicato). Testi della sezione Power Station chiariti: solo il relè è indispensabile, il sensore vale per qualsiasi presa o relè con misura di potenza e i campi soglia/durata sono marcati facoltativi. ⚠️ Le automazioni create con versioni precedenti vanno ricreate.
 - **v1.2.1** — Testi del form più chiari: "Assorbimento del carico" diventa "Potenza del carico da alimentare" con i tre casi a elenco; i tag [Setpoint]/[Resistenza] compaiono anche nelle opzioni della domanda sul tipo di sistema e ogni campo ACS dichiara per quale scelta va compilato; descrizioni aggiunte a soglie SOC e tempi di stabilità; "Solo con il sole" diventa "Spegni al tramonto" con spiegazione. Nessuna modifica alla logica.
 - **v1.2** — Form semplificato: a vista restano solo i 3 sensori, la scelta del surplus e l'assorbimento del carico; potenza massima, lettura live third-party e PV di terze parti sono nella nuova sezione chiusa *Avanzate*; *Soglie e comportamento* e *Sicurezza* sono ora un'unica sezione *Soglie e sicurezza*. Descrizione introduttiva accorciata. Solo riorganizzazione della presentazione: nessun input rimosso o rinominato, le automazioni esistenti non cambiano.
 - **v1.1.1** — Potenza massima erogabile: l'integrazione non espone il sensore "Max Discharge Power" (è un valore interno), quindi il valore manuale diventa l'impostazione principale. Il campo entità resta come opzione avanzata: in controllo third-party si può selezionare *Target Grid Power* e il limite viene letto live dal suo attributo `max_discharge_power`. Nessuna modifica necessaria alle automazioni esistenti.

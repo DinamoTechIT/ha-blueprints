@@ -157,34 +157,40 @@ blueprint:
       collapsed: true
       description: >-
         Compila SOLO se hai scelto "Ricaricare una power station".
-        Se hai scelto l'acqua calda, salta questa sezione.
+        Se hai scelto l'acqua calda, salta questa sezione. L'unico campo
+        indispensabile è il relè: gli altri tre servono solo per lo
+        spegnimento automatico a ricarica completata.
       input:
         entita_rele_ps:
           name: Relè / smart plug del caricatore
           description: >-
-            L'entità switch della presa smart a cui è collegato il
-            caricatore della power station
+            L'entità switch della presa smart o del relè a cui è collegato
+            il caricatore della power station
           default: ""
           selector:
             entity:
               domain: switch
         sensore_potenza_ps:
-          name: Sensore potenza della smart plug (facoltativo)
+          name: Sensore della potenza assorbita (facoltativo)
           description: >-
-            Il sensore di potenza della presa smart. Se configurato, quando
-            la power station finisce di caricarsi (potenza sotto la soglia
-            qui sotto per il tempo indicato) la presa viene spenta invece
-            di restare alimentata a vuoto.
+            La misura di potenza della presa smart o del relè con power
+            monitoring che alimenta il caricatore. Se configurato, quando
+            la power station finisce di caricarsi la presa viene spenta
+            invece di restare alimentata a vuoto; i due campi qui sotto
+            regolano questo comportamento. Se lasciato vuoto, la presa
+            resta alimentata fino a fine surplus (nessun danno).
           default: ""
           selector:
             entity:
               domain: sensor
               device_class: power
         soglia_potenza_ps:
-          name: Potenza minima di ricarica
+          name: Potenza minima di ricarica (facoltativo)
           description: >-
-            Sotto questa potenza la power station è considerata carica
-            (il caricatore in standby assorbe solo pochi watt).
+            Serve solo se hai configurato il sensore qui sopra, altrimenti
+            viene ignorato: sotto questa potenza la power station è
+            considerata carica (il caricatore in standby assorbe solo
+            pochi watt).
           default: 25
           selector:
             number:
@@ -193,10 +199,12 @@ blueprint:
               step: 5
               unit_of_measurement: W
         minuti_ps_piena:
-          name: Durata sotto soglia (minuti)
+          name: Durata sotto soglia (facoltativo)
           description: >-
-            Per quanti minuti la potenza deve restare sotto la soglia prima
-            di spegnere la presa. Copre anche la rampa iniziale di ricarica.
+            Serve solo se hai configurato il sensore qui sopra, altrimenti
+            viene ignorato: per quanti minuti la potenza deve restare sotto
+            la soglia prima di spegnere la presa. Copre anche la rampa
+            iniziale di ricarica.
           default: 10
           selector:
             number:
