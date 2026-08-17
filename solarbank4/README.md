@@ -51,6 +51,7 @@ Poi apri **solo la sezione** della modalità scelta: *Configurazione Acqua Calda
 | SOC minimo di mantenimento | 50 % | Sotto questa carica il carico viene spento |
 | Stabilità attivazione/disattivazione | 5 min | Filtra nuvole e picchi di consumo |
 | Prelievo massimo tollerato (facoltativo) | 300 W | Rete di sicurezza: spegne il carico se prelevi dalla rete |
+| Controllo della ricarica (power station) | smart plug | Smart plug / relè smart comandati dal blueprint. L'opzione "presa di backup della Solarbank" è predisposta ma non ancora disponibile |
 | Sensore della potenza assorbita (facoltativo) | — | Solo modalità power station: se la presa smart o il relè misurano la potenza, la ricarica completata viene rilevata e la presa spenta |
 | Potenza minima di ricarica | 25 W | Sotto questa potenza la power station è considerata carica |
 | Durata sotto soglia | 10 min | Tempo di conferma prima dello spegnimento (copre anche la rampa iniziale di ricarica) |
@@ -67,6 +68,7 @@ La potenza massima erogabile si imposta a mano (l'integrazione attuale non espon
 ## ⚠️ Limitazioni note
 
 - **Power station piena**: se la presa o il relè non misurano la potenza (o il sensore non è configurato), il blueprint non rileva la fine della ricarica e la presa resta alimentata (a vuoto, nessun danno) fino a fine surplus. Con una presa smart o un relè dotati di misura di potenza, configura il sensore nella sezione Power Station e la presa si spegne da sola a ricarica completata.
+- **Presa di backup della Solarbank**: l'opzione compare nel modulo ma non è ancora attiva — l'integrazione ufficiale non consente ancora di comandarla da Home Assistant. Selezionarla oggi produce solo una notifica di avviso; sarà abilitata in una versione futura.
 - **Modulo non dinamico**: i blueprint di Home Assistant mostrano sempre tutte le sezioni; compila solo quella della modalità scelta, le altre vengono ignorate.
 - Il blueprint controlla **un carico**: per più carichi in cascata, crea più automazioni dallo stesso blueprint (con soglie diverse) — o aspetta il blueprint dedicato 😉
 
@@ -80,4 +82,4 @@ Il blueprint è gratuito. Se ti fa risparmiare: [offrici un caffè via PayPal](h
 
 ## 📋 Changelog
 
-- **v1.0** — Prima release: modalità ACS setpoint / ACS resistenza / power station, modello fisico P_max−P_carico, spegnimento automatico a power station carica (con sensore di potenza opzionale), watchdog sensori, blocco con avviso, PV di terze parti opzionale, sicurezza sul prelievo dalla rete.
+- **v1.0** — Prima release: modalità ACS setpoint / ACS resistenza / power station, modello fisico P_max−P_carico, spegnimento automatico a power station carica (con sensore di potenza opzionale), watchdog sensori, blocco con avviso, PV di terze parti opzionale, sicurezza sul prelievo dalla rete, predisposizione al controllo tramite presa di backup della Solarbank.

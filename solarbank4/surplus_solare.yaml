@@ -158,9 +158,25 @@ blueprint:
       description: >-
         Compila SOLO se hai scelto "Ricaricare una power station".
         Se hai scelto l'acqua calda, salta questa sezione. L'unico campo
-        indispensabile è il relè: gli altri tre servono solo per lo
+        indispensabile è il relè: gli altri servono solo per lo
         spegnimento automatico a ricarica completata.
       input:
+        controllo_ps:
+          name: Come vuoi controllare la ricarica?
+          description: >-
+            Con una presa smart o un relè comandati dal blueprint, oppure
+            — in futuro — collegando il caricatore alla presa di backup
+            della Solarbank. Il controllo della presa di backup non è
+            ancora possibile dall'integrazione ufficiale: l'opzione è già
+            qui per quando lo sarà.
+          default: smart_plug
+          selector:
+            select:
+              options:
+                - label: "Smart plug o relè smart (es. Shelly)"
+                  value: smart_plug
+                - label: "Presa di backup della Solarbank — NON ANCORA DISPONIBILE"
+                  value: presa_backup
         entita_rele_ps:
           name: Relè / smart plug del caricatore
           description: >-
@@ -462,10 +478,13 @@ variables:
   _entita_setpoint: !input entita_setpoint
   _entita_rele_acs: !input entita_rele_acs
   _entita_rele_ps: !input entita_rele_ps
-  # Il relè da comandare dipende dalla modalità scelta
+  _controllo_ps: !input controllo_ps
+  # Il relè da comandare dipende dalla modalità scelta. La presa di
+  # backup della Solarbank non è ancora controllabile: in quel caso
+  # nessun relè, e l'attivazione produce una notifica dedicata.
   _rele_attivo: >-
     {% if _modalita == 'rele' %} {{ _entita_rele_acs }}
-    {% elif _modalita == 'power_station' %} {{ _entita_rele_ps }}
+    {% elif _modalita == 'power_station' and _controllo_ps == 'smart_plug' %} {{ _entita_rele_ps }}
     {% else %} {{ '' }}
     {% endif %}
   # Comando risultante da questo trigger: 'on', 'off' o nessuno
@@ -528,6 +547,24 @@ actions:
                       entity_id: !input entita_setpoint
                     data:
                       temperature: !input temp_surplus
+              # Power station via presa di backup — non ancora supportato
+              - conditions:
+                  - condition: template
+                    value_template: >-
+                      {{ _modalita == 'power_station'
+                         and _controllo_ps == 'presa_backup' }}
+                sequence:
+                  - action: persistent_notification.create
+                    data:
+                      title: "⚠️ Surplus Solare: presa di backup non ancora supportata"
+                      message: >-
+                        Hai scelto il controllo della ricarica tramite la
+                        presa di backup della Solarbank, ma l'integrazione
+                        ufficiale non ne consente ancora il controllo da
+                        Home Assistant. Per ora collega il caricatore a una
+                        smart plug o a un relè smart e seleziona quella
+                        opzione nel blueprint.
+                      notification_id: surplus_solare_backup_warning
               # ACS resistenza o Power station — accensione relè
               - conditions:
                   - condition: template
