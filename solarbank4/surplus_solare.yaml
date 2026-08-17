@@ -168,7 +168,9 @@ blueprint:
             — in futuro — collegando il caricatore alla presa di backup
             della Solarbank. Il controllo della presa di backup non è
             ancora possibile dall'integrazione ufficiale: l'opzione è già
-            qui per quando lo sarà.
+            qui per quando lo sarà. ⚠️ Per usare la presa di backup la
+            Solarbank dovrà essere impostata in modalità "Controllo di
+            terze parti".
           default: smart_plug
           selector:
             select:
@@ -563,7 +565,9 @@ actions:
                         ufficiale non ne consente ancora il controllo da
                         Home Assistant. Per ora collega il caricatore a una
                         smart plug o a un relè smart e seleziona quella
-                        opzione nel blueprint.
+                        opzione nel blueprint. Quando la funzione sarà
+                        disponibile, richiederà anche la Solarbank in
+                        modalità "Controllo di terze parti".
                       notification_id: surplus_solare_backup_warning
               # ACS resistenza o Power station — accensione relè
               - conditions:

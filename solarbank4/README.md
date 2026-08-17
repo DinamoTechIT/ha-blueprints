@@ -68,7 +68,7 @@ La potenza massima erogabile si imposta a mano (l'integrazione attuale non espon
 ## ⚠️ Limitazioni note
 
 - **Power station piena**: se la presa o il relè non misurano la potenza (o il sensore non è configurato), il blueprint non rileva la fine della ricarica e la presa resta alimentata (a vuoto, nessun danno) fino a fine surplus. Con una presa smart o un relè dotati di misura di potenza, configura il sensore nella sezione Power Station e la presa si spegne da sola a ricarica completata.
-- **Presa di backup della Solarbank**: l'opzione compare nel modulo ma non è ancora attiva — l'integrazione ufficiale non consente ancora di comandarla da Home Assistant. Selezionarla oggi produce solo una notifica di avviso; sarà abilitata in una versione futura.
+- **Presa di backup della Solarbank**: l'opzione compare nel modulo ma non è ancora attiva — l'integrazione ufficiale non consente ancora di comandarla da Home Assistant. Selezionarla oggi produce solo una notifica di avviso; sarà abilitata in una versione futura e richiederà la Solarbank in modalità **Controllo di terze parti**.
 - **Modulo non dinamico**: i blueprint di Home Assistant mostrano sempre tutte le sezioni; compila solo quella della modalità scelta, le altre vengono ignorate.
 - Il blueprint controlla **un carico**: per più carichi in cascata, crea più automazioni dallo stesso blueprint (con soglie diverse) — o aspetta il blueprint dedicato 😉
 
