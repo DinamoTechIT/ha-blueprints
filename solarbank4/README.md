@@ -12,7 +12,7 @@ E riporta tutto allo stato normale quando il surplus finisce, al tramonto, o se 
 ## ✅ Prerequisiti
 
 1. **Home Assistant** aggiornato (2024.6 o successivo)
-2. **Integrazione ufficiale [Anker SOLIX Official](https://github.com/anker-charging/ha-anker-solix-official)** installata e connessa alla tua Solarbank 4 via Modbus TCP locale → guarda la nostra guida: [LINK VIDEO]
+2. **Integrazione ufficiale [Anker SOLIX Official](https://github.com/anker-charging/ha-anker-solix-official)** installata e connessa alla tua Solarbank 4 via Modbus TCP locale → guarda la [nostra guida](https://youtu.be/FzNxHsjqhx0)
 3. A seconda di cosa vuoi fare col surplus:
    - un sistema ACS integrato in Home Assistant che permetta di regolare la temperatura (es. Daikin Altherma via Onecta), **oppure**
    - un relè smart / smart plug (es. Shelly) collegato alla resistenza o al caricatore → per il collegamento della resistenza guarda la **[Guida Smart Grid](https://youtu.be/hdCO130G4m8)**

@@ -29,7 +29,7 @@ Le istruzioni dettagliate di ogni blueprint sono nel README della sua cartella.
 
 ## 🎬 Video collegati
 
-- Guida all'integrazione ufficiale Anker SOLIX per Home Assistant → [LINK VIDEO]
+- Guida all'integrazione ufficiale Anker SOLIX per Home Assistant → https://youtu.be/FzNxHsjqhx0
 - Guida Smart Grid: collegare resistenze e relè smart → https://youtu.be/hdCO130G4m8
 
 ## ❤️ Supporta il progetto
